@@ -106,6 +106,8 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 	double defaultXTopCharge = xTopCharge;
 	double defaultYTopCharge = yTopCharge;
 
+	public enum ChargeType { POINT, TOP, BOTTOM };
+
 	public void init() {
 		setBackground(Color.white);
 		/*Sets up the background and foreground colors for
@@ -160,16 +162,26 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 		g.fillOval((int)(x-r/2),(int)(y-r/2),(int)r,(int)r);
 	}
 
-	public void drawFieldLines(Graphics g, double xPoint, double yPoint, double xBottomCharge, double yBottomCharge,
-							   double xTopCharge, double yTopCharge, double chargeMagnitude, int type) {
+	public void drawFieldLines(Graphics g, double xPoint, double yPoint, double xBottomCharge, double yBottomCharge, double xTopCharge, double yTopCharge,
+							   double chargeOfPoint, double chargeOfBottom, double chargeOfTop, ChargeType type) {
 		Line line = new Line(0.0,0.0,0.0,0.0);
 		line.ang = Math.PI/8.;
 		comp = 1.;
 		istop= 0;
 		while(line.ang < 2*Math.PI) {
 			//Conditional xPoint, yPoint;
-			line.sx = xPoint - 10 * Math.cos(line.ang);
-			line.sy = yPoint - 10 * Math.sin(line.ang);
+			if (type == ChargeType.POINT) {
+				line.sx = xPoint - 10 * Math.cos(line.ang);
+				line.sy = yPoint - 10 * Math.sin(line.ang);
+			}
+			else if (type == ChargeType.TOP) {
+				line.sx = xTopCharge + 10 * Math.cos(line.ang);
+				line.sy = yTopCharge + 10 * Math.sin(line.ang);
+			}
+			else if (type == ChargeType.BOTTOM) {
+				line.sx = xBottomCharge + 10 * Math.cos(line.ang);
+				line.sy = yBottomCharge - 10 * Math.sin(line.ang);
+			}
 
 			while(istop < nstop && dist1 > distm && dist2 > distm && dist3 > distm && line.sx < width && line.sy < height ) {
 				dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
@@ -179,12 +191,28 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 
 				compx = chargeOfBottom*(line.sx - xBottomCharge) / Math.pow(dist2,3) + chargeOfPoint *(line.sx - xPoint) / Math.pow(dist1,3) + chargeOfTop* (line.sx - xTopCharge) / Math.pow(dist3,3);
 				compy = chargeOfBottom*(line.sy - yBottomCharge) / Math.pow(dist2,3) + chargeOfPoint *(line.sy - yPoint) / Math.pow(dist1,3) + chargeOfTop*(line.sy-yTopCharge)/Math.pow(dist3,3);
-				if (type == 1) {
+				
+				if (type == ChargeType.POINT) {
 					compx *= -1;
 					compy *= -1;
 				}
 				comp = Math.sqrt(Math.pow(compx,2) + Math.pow (compy,2));
+
+				if (withinBoundariesOfPanel(line.sx, line.sy, 5) &&
+					withinBoundariesOfPanel(line.ex, line.ey, 5)) {
+					g.setColor(new Color(0,190,0));
+					g.drawLine((int)line.sx, (int)line.sy, (int)line.ex, (int)line.ey);
+				}
+
+				line.sx = line.ex;
+				line.sy = line.ey;
+				distm = distmin;
+				istop += 1;
 			}
+
+			line.ang += Math.PI/4.;
+			comp=1.;
+			istop=0;
 		}
 	}
 
@@ -214,9 +242,8 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 		Line line = new Line(0.0,0.0,0.0,0.0);
 
 		if(inAction) {
-			while (timeValue < timeMax &&
-				   withinBoundariesOfPanel((double)(xPoint - radiusPoint/2), (double)(yPoint - radiusPoint/2), 5) &&
-				   withinBoundariesOfPanel((double)(xPoint + radiusPoint/2), (double)(yPoint + radiusPoint/2), 5)) { 
+			while (timeValue < timeMax && withinBoundariesOfPanel((double)(xPoint - radiusPoint/2), (double)(yPoint - radiusPoint/2), 5) &&
+										  withinBoundariesOfPanel((double)(xPoint + radiusPoint/2), (double)(yPoint + radiusPoint/2), 5)) { 
 				comp = 1;
 
 				pointCircleObject.cx = (int)xPoint;
@@ -233,7 +260,12 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 				drawPoint(g, chargeOfBottom, xBottomCharge, yBottomCharge, radiusCharge);
 				drawPoint(g, chargeOfTop, xTopCharge, yTopCharge, radiusCharge);
 
-				//  draw field lines for chargeOfPoint
+
+				// drawFieldLines(g, xPoint, yPoint, xBottomCharge, yBottomCharge, xTopCharge, yTopCharge, chargeOfPoint, chargeOfBottom, chargeOfTop, ChargeType.POINT);
+				// drawFieldLines(g, xPoint, yPoint, xBottomCharge, yBottomCharge, xTopCharge, yTopCharge, chargeOfPoint, chargeOfBottom, chargeOfTop, ChargeType.BOTTOM);
+				// drawFieldLines(g, xPoint, yPoint, xBottomCharge, yBottomCharge, xTopCharge, yTopCharge, chargeOfPoint, chargeOfBottom, chargeOfTop, ChargeType.TOP);
+	
+				// draw field lines for chargeOfPoint
 				line.ang = Math.PI/8.;
 				comp = 1.;
 				istop= 0;
@@ -256,13 +288,12 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 
 						comp = Math.sqrt(Math.pow(compx,2) + Math.pow (compy,2));
 
-						if(comp < emagmin)
-							line.ex = line.sx +dx;
+						if (comp < emagmin)
+							line.ex = line.sx + dx;
 						else
 							line.ex = line.sx + (compx/comp) * (double)dx;
-						
-						if(comp < emagmin)
-							line.ey = line.sy +dx;
+						if (comp < emagmin)
+							line.ey = line.sy + dx;
 						else
 							line.ey = line.sy + (compy/comp) * (double)dx;
 
@@ -283,7 +314,7 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 					istop=0;
 				}
 
-				//draw field lines for chargeOfBottom
+				// draw field lines for chargeOfBottom
 				line.ang = Math.PI/8.;
 				comp = 1;
 				istop=0;
@@ -307,10 +338,14 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 
 						comp = Math.sqrt(Math.pow(compx,2) + Math.pow (compy,2));
 
-						if(comp < emagmin) line.ex = line.sx - dx;
-						else   line.ex = line.sx + (compx/comp) * (double)dx;
-						if(comp < emagmin) line.ey = line.sy - dx;
-						else   line.ey = line.sy + (compy/comp) * (double)dx;
+						if (comp < emagmin)
+							line.ex = line.sx - dx;
+						else
+							line.ex = line.sx + (compx/comp) * (double)dx;
+						if (comp < emagmin)
+							line.ey = line.sy - dx;
+						else
+							line.ey = line.sy + (compy/comp) * (double)dx;
 
 						//Don't draw out of boundary (5 = margin)
 						if (withinBoundariesOfPanel(line.sx, line.sy, 5) &&
@@ -330,7 +365,7 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 					istop=0;
 				}
 
-				//  draw field lines for chargeOfTop
+				// draw field lines for chargeOfTop
 				line.ang =Math.PI/8.; 
 				comp = 1;
 				istop=0;
@@ -354,12 +389,11 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 						comp = Math.sqrt(Math.pow(compx,2) + Math.pow (compy,2));
 
 						if (comp < emagmin)
-							line.ex = line.sx +dx;
+							line.ex = line.sx + dx;
 						else
 							line.ex = line.sx + (compx/comp) * (double)dx;
-						
-						if(comp < emagmin)
-							line.ey = line.sy +dx;
+						if (comp < emagmin)
+							line.ey = line.sy + dx;
 						else
 							line.ey = line.sy + (compy/comp) * (double)dx;
 
@@ -372,6 +406,7 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 
 						line.sx = line.ex;
 						line.sy = line.ey;
+						distm = distmin;
 						istop+=1;
 					}
 					line.ang += Math.PI/4.;
