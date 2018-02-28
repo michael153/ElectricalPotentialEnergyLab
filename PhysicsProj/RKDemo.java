@@ -35,9 +35,9 @@ public RKDemo(double i_t,double[] i_x,double i_dt)
 
 protected double[] derivative(double i_t,double[] i_x)
     {
-	double q1 = Potential.q1;  
-	double q2 = Potential.q2;  
-	double q3 = Potential.q3;  
+	double q1 = Potential.chargeOfPoint;  
+	double q2 = Potential.chargeOfBottom;  
+	double q3 = Potential.chargeOfTop;  
 	double x2 = Potential.x2;  
 	double y2 = Potential.y2;  
 	double x3 = Potential.x3;  
