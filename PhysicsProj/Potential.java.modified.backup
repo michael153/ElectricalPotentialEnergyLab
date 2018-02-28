@@ -50,7 +50,7 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 	int dx = 10;
 
 	double timeValue = 0;
-	double dTime = 475.;
+	double dtim = 475.;
 
 	public double[] x;
 
@@ -160,35 +160,6 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 		g.fillOval((int)(x-r/2),(int)(y-r/2),(int)r,(int)r);
 	}
 
-	public void drawFieldLines(Graphics g, double xPoint, double yPoint, double xBottomCharge, double yBottomCharge,
-							   double xTopCharge, double yTopCharge, double chargeMagnitude, int type) {
-		Line line = new Line(0.0,0.0,0.0,0.0);
-		line.ang = Math.PI/8.;
-		comp = 1.;
-		istop= 0;
-		while(line.ang < 2*Math.PI) {
-			//Conditional xPoint, yPoint;
-			line.sx = xPoint - 10 * Math.cos(line.ang);
-			line.sy = yPoint - 10 * Math.sin(line.ang);
-
-			while(istop < nstop && dist1 > distm && dist2 > distm && dist3 > distm && line.sx < width && line.sy < height ) {
-				dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
-				dist2 = Math.sqrt(Math.pow(line.sx-xBottomCharge, 2) + Math.pow(line.sy-yBottomCharge, 2));
-				dist3 = Math.sqrt(Math.pow(line.sx-xTopCharge, 2) + Math.pow(line.sy-yTopCharge, 2));
-				distm = 9.;
-
-				compx = chargeOfBottom*(line.sx - xBottomCharge) / Math.pow(dist2,3) + chargeOfPoint *(line.sx - xPoint) / Math.pow(dist1,3) + chargeOfTop* (line.sx - xTopCharge) / Math.pow(dist3,3);
-				compy = chargeOfBottom*(line.sy - yBottomCharge) / Math.pow(dist2,3) + chargeOfPoint *(line.sy - yPoint) / Math.pow(dist1,3) + chargeOfTop*(line.sy-yTopCharge)/Math.pow(dist3,3);
-				if (type == 1) {
-					compx *= -1;
-					compy *= -1;
-				}
-				comp = Math.sqrt(Math.pow(compx,2) + Math.pow (compy,2));
-			}
-		}
-	}
-
-
 	public void paint(Graphics g) {
 		setBackground(java.awt.Color.white);
 		
@@ -210,7 +181,7 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 		bottomChargeCircleObject = new Circle(0, (int)radiusCharge,(int)xBottomCharge,(int)yBottomCharge);
 		topChargeCircleObject = new Circle(0, (int)radiusCharge,(int)xTopCharge,(int)yTopCharge);
 
-		RKDemo nint = new RKDemo(timeValue, x, .01);
+		RKDemo nint = new RKDemo(timeValue,x,.01);
 		Line line = new Line(0.0,0.0,0.0,0.0);
 
 		if(inAction) {
@@ -244,9 +215,9 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 					dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
 					dist2 = Math.sqrt(Math.pow(line.sx-xBottomCharge, 2) + Math.pow(line.sy-yBottomCharge, 2));
 					dist3 = Math.sqrt(Math.pow(line.sx-xTopCharge, 2) + Math.pow(line.sy-yTopCharge, 2));
-					distm = 9.;
+					distm=9.;
 
-					while(istop < nstop && dist1 > distm && dist2 > distm && dist3 > distm && line.sx < width && line.sy < height ) {
+					while(istop < nstop && dist1 > distm && dist2 > distm && dist3 > distm && line.sx > 0 && line.sx < width && line.sy > 0 && line.sy < height ) {
 						dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
 						dist2 = Math.sqrt(Math.pow(line.sx-xBottomCharge, 2) + Math.pow(line.sy-yBottomCharge, 2));
 						dist3 = Math.sqrt(Math.pow(line.sx-xTopCharge, 2) + Math.pow(line.sy-yTopCharge, 2));
@@ -307,9 +278,9 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 
 						comp = Math.sqrt(Math.pow(compx,2) + Math.pow (compy,2));
 
-						if(comp < emagmin) line.ex = line.sx - dx;
+						if(comp < emagmin) line.ex = line.sx -dx;
 						else   line.ex = line.sx + (compx/comp) * (double)dx;
-						if(comp < emagmin) line.ey = line.sy - dx;
+						if(comp < emagmin) line.ey = line.sy -dx;
 						else   line.ey = line.sy + (compy/comp) * (double)dx;
 
 						//Don't draw out of boundary (5 = margin)
@@ -341,7 +312,8 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 					dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
 					dist2 = Math.sqrt(Math.pow(line.sx-xBottomCharge, 2) + Math.pow(line.sy-yBottomCharge, 2));
 					dist3 = Math.sqrt(Math.pow(line.sx-xTopCharge, 2) + Math.pow(line.sy-yTopCharge, 2));
-					distm = 9.;
+					comp = 1;
+					distm=9.;
 
 					while(istop < nstop && dist1 > distm && dist2 > distm && dist3 > distm && line.sx < width && line.sy < height ) {
 						dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
@@ -382,12 +354,9 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 				bconecy = pointCircleObject.cy;
 
 				nint.iterate();
-				xold[0] = nint.x[0];
-				xold[1] = nint.x[1];
-				xold[2] = nint.x[2];
-				xold[3] = nint.x[3];
+				xold[0]=nint.x[0]; xold[1]=nint.x[1];xold[2]=nint.x[2];xold[3]=nint.x[3];
 
-				timeValue += dTime;
+				timeValue+=dtim;
 
 				//reset point everytime (to similute movement)
 				g.setColor(java.awt.Color.white);
