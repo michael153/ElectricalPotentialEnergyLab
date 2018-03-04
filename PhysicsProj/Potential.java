@@ -27,7 +27,6 @@ import PhysicsProj.*;
 // import Line;
 
 public class Potential extends JApplet implements MouseListener, MouseMotionListener, AdjustmentListener, ActionListener {
-	boolean released = false;
 
 	static int height = 600;
 	static int width = 900;
@@ -114,6 +113,7 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 		both the buttons and the scrollbars */
 		restartButton.setForeground(Color.black);
 		restartButton.setBackground(Color.lightGray);
+
 		goButton.setForeground(Color.black);
 		goButton.setBackground(Color.lightGray);
 		dxScroll.setForeground(Color.black);
@@ -468,7 +468,6 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 	}
 
 	public void mouseReleased (MouseEvent mouseEvent) {
-		System.out.println("Mouse Released");
 		bottomChargeCircleObject.hit = 0;
 		topChargeCircleObject.hit = 0;
 	} 

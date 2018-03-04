@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang = "en-us">
+	<head>
+		<meta charset = "UTF-8">
+		<title>Electrical Potential Energy Lab</title>
+		<script src="potential.js"></script>
+	</head>
+	<body>
+		<div id = "top" align = "center" style = "vertical-align: middle">
+			<input type="range" min="1" max="50" value="5" class="slider" id="dx">
+			<label id = "dxLabel">Simulation Speed = </label><output id="dxOutput">5</output>
+			
+			<input type="range" min="0" max="700" value="0" class="slider" id="vx">
+			<label id = "dxLabel">vx = </label><output id="vxOutput">0</output>
+			
+			<input type="range" min="0" max="700" value="0" class="slider" id="vy">
+			<label id = "dyLabel">vy = </label><output id="vyOutput">0</output>
+			
+			<input type="submit" value="Go"/>
+			<input type="submit" value="Restart"/>
+		</div>
+		<br>
+		<div id = "container" align = "center">
+			<canvas id="panel" width="1200" height="700" style="border:1px solid #000000;"></canvas>
+		</div>
+	</body>
+	<script>
+		document.getElementById("dx").oninput = function() {
+			var val = document.getElementById("dx").value;
+			document.getElementById('dxOutput').innerHTML = val;
+		};
+		document.getElementById("vx").oninput = function() {
+			var val = document.getElementById("vx").value;
+			document.getElementById('vxOutput').innerHTML = val;
+		};
+		document.getElementById("vy").oninput = function() {
+			var val = document.getElementById("vy").value;
+			document.getElementById('vyOutput').innerHTML = val;
+		};
+		var canvas = document.getElementById("panel");
+		var context = canvas.getContext("2d");
+	</script>
+	<script>
+		var height = 600;
+		var width = 900;
+		var radiusCharge = 20; //radius of spheres
+		var radiusPoint = 10.; //radius of point
+		var vx = 0.;
+		var vy = 0.;
+		var xPoint = 300.;
+		var yPoint = height/2;
+		var xBottomCharge = 450; 
+		var yBottomCharge = (height - 150); 
+		var xTopCharge = 450;
+		var yTopCharge = (height - (height-150));
+		var inAction = false;
+		var dx = 10;
+		var timeValue = 0;
+		var dTime = 475.;
+		var chargeOfPoint = -1.0;
+		var chargeOfBottom = 10.0;
+		var chargeOfTop = 10.0;
+	</script>
+	<script>
+		function drawPoint(chargeMagnitude, x, y, r) {
+			context.beginPath();
+			context.arc(x, y, r, 0, 2 * Math.PI);
+			if (chargeMagnitude > 0)
+				context.fillStyle = 'red';
+			else
+				context.fillStyle = 'black';
+			context.fill();
+			context.stroke();
+		}
+		drawPoint(chargeOfPoint, xPoint, yPoint, radiusPoint);
+		drawPoint(chargeOfBottom, xBottomCharge, yBottomCharge, radiusCharge);
+		drawPoint(chargeOfTop, xTopCharge, yTopCharge, radiusCharge);
+	</script>
+</html>
