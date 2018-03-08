@@ -3,7 +3,10 @@
 	<head>
 		<meta charset = "UTF-8">
 		<title>Electrical Potential Energy Lab</title>
-		<script src="potential.js"></script>
+		<script src="js/Circle.js"></script>
+		<script src="js/Line.js"></script>
+		<script src="js/RKDemo.js"></script>
+		<script src="js/potential.js"></script>
 	</head>
 	<body>
 		<div id = "top" align = "center" style = "vertical-align: middle">
@@ -37,43 +40,18 @@
 			var val = document.getElementById("vy").value;
 			document.getElementById('vyOutput').innerHTML = val;
 		};
+	</script>
+	<script>
 		var canvas = document.getElementById("panel");
 		var context = canvas.getContext("2d");
-	</script>
-	<script>
-		var height = 600;
-		var width = 900;
-		var radiusCharge = 20; //radius of spheres
-		var radiusPoint = 10.; //radius of point
-		var vx = 0.;
-		var vy = 0.;
-		var xPoint = 300.;
-		var yPoint = height/2;
-		var xBottomCharge = 450; 
-		var yBottomCharge = (height - 150); 
-		var xTopCharge = 450;
-		var yTopCharge = (height - (height-150));
-		var inAction = false;
-		var dx = 10;
-		var timeValue = 0;
-		var dTime = 475.;
-		var chargeOfPoint = -1.0;
-		var chargeOfBottom = 10.0;
-		var chargeOfTop = 10.0;
-	</script>
-	<script>
-		function drawPoint(chargeMagnitude, x, y, r) {
-			context.beginPath();
-			context.arc(x, y, r, 0, 2 * Math.PI);
-			if (chargeMagnitude > 0)
-				context.fillStyle = 'red';
-			else
-				context.fillStyle = 'black';
-			context.fill();
-			context.stroke();
-		}
-		drawPoint(chargeOfPoint, xPoint, yPoint, radiusPoint);
-		drawPoint(chargeOfBottom, xBottomCharge, yBottomCharge, radiusCharge);
-		drawPoint(chargeOfTop, xTopCharge, yTopCharge, radiusCharge);
+
+		drawPoint(context, chargeOfPoint, xPoint, yPoint, radiusPoint);
+		drawPoint(context, chargeOfBottom, xBottomCharge, yBottomCharge, radiusCharge);
+		drawPoint(context, chargeOfTop, xTopCharge, yTopCharge, radiusCharge);
+
+		// test();
+		// test();
+		// test();
+		iterateSimulation(canvas, context);
 	</script>
 </html>

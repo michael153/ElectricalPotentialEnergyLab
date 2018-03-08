@@ -162,8 +162,7 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 		g.fillOval((int)(x-r/2),(int)(y-r/2),(int)r,(int)r);
 	}
 
-	public void drawFieldLines(Graphics g, double xPoint, double yPoint, double xBottomCharge, double yBottomCharge, double xTopCharge, double yTopCharge,
-							   double chargeOfPoint, double chargeOfBottom, double chargeOfTop, ChargeType type) {
+	public void drawFieldLines(Graphics g, double xPoint, double yPoint, double xBottomCharge, double yBottomCharge, double xTopCharge, double yTopCharge, double chargeOfPoint, double chargeOfBottom, double chargeOfTop, ChargeType type) {
 		Line line = new Line(0.0,0.0,0.0,0.0);
 		line.ang = Math.PI/8.;
 		comp = 1.;
@@ -269,7 +268,7 @@ public class Potential extends JApplet implements MouseListener, MouseMotionList
 				line.ang = Math.PI/8.;
 				comp = 1.;
 				istop= 0;
-				while(line.ang < 2*Math.PI) {
+				while (line.ang < 2*Math.PI) {
 					line.sx = xPoint - 10 * Math.cos(line.ang);
 					line.sy = yPoint - 10 * Math.sin(line.ang);
 
