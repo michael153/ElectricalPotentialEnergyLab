@@ -70,6 +70,17 @@ class RKDemo {
 		this.potential_y3 = y3_;
 	}
 
+	log() {
+		console.log("t = " + this.t);
+		console.log("dt = " + this.dt);
+		console.log("n = " + this.n);
+		console.log("x = " + this.x);
+		console.log("k1 = " + this.k1);
+		console.log("k2 = " + this.k2);
+		console.log("k3 = " + this.k3);
+		console.log("k4 = " + this.k4);
+	}
+
 	iterate() {
 		// console.log("Start of iterate..." + this.k1 + ", " + this.k2 + ", " + this.k3 + ", " + this.k4 + ", " + this.t);
 		var i;
@@ -96,10 +107,10 @@ class RKDemo {
 		    this.x[i] += this.dt/6.0 * (this.k1[i] + 2.0*this.k2[i] + 2.0*this.k3[i] + this.k4[i]);
 		}
 		this.t += this.dt;
-		console.log("this.k1: " + this.k1);
-		console.log("this.k2: " + this.k2);
-		console.log("this.k3: " + this.k3);
-		console.log("this.k4: " + this.k4);
-		console.log("this.t: " + this.t);
+		// console.log("this.k1: " + this.k1);
+		// console.log("this.k2: " + this.k2);
+		// console.log("this.k3: " + this.k3);
+		// console.log("this.k4: " + this.k4);
+		// console.log("this.t: " + this.t);
 	}
 }

@@ -3,6 +3,7 @@
 	<head>
 		<meta charset = "UTF-8">
 		<title>Electrical Potential Energy Lab</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<script src="js/Circle.js"></script>
 		<script src="js/Line.js"></script>
 		<script src="js/RKDemo.js"></script>
@@ -19,8 +20,8 @@
 			<input type="range" min="0" max="700" value="0" class="slider" id="vy">
 			<label id = "dyLabel">vy = </label><output id="vyOutput">0</output>
 			
-			<input type="submit" value="Go"/>
-			<input type="submit" value="Restart"/>
+			<input type="submit" id = 'go' value="Go"/>
+			<input type="submit" id = 'restart' value="Restart"/>
 		</div>
 		<br>
 		<div id = "container" align = "center">
@@ -45,13 +46,56 @@
 		var canvas = document.getElementById("panel");
 		var context = canvas.getContext("2d");
 
-		drawPoint(context, chargeOfPoint, xPoint, yPoint, radiusPoint);
-		drawPoint(context, chargeOfBottom, xBottomCharge, yBottomCharge, radiusCharge);
-		drawPoint(context, chargeOfTop, xTopCharge, yTopCharge, radiusCharge);
+		window.onload = function() {
+			console.log("Calling init()...");
+			init();
+		}
+		// drawPoint(context, chargeOfPoint, xPoint, yPoint, radiusPoint);
+		// drawPoint(context, chargeOfBottom, xBottomCharge, yBottomCharge, radiusCharge);
+		// drawPoint(context, chargeOfTop, xTopCharge, yTopCharge, radiusCharge);
+	</script>
+	
+	<!-- All the listeners -->
+	<script>
+		var start = {x: 0, y: 0};
+		var end = {x: 0, y: 0};
+		var flag = 0;
 
-		// test();
-		// test();
-		// test();
-		iterateSimulation(canvas, context);
+		canvas.addEventListener("mousedown", function(e) {
+			start.x = e.pageX - this.offsetLeft;
+			start.y = e.pageY - this.offsetTop;
+			flag = 1;
+		}, false);
+		
+		canvas.addEventListener("mousemove", function(e) {
+			if (flag === 1) {
+				end.x = e.pageX - this.offsetLeft;
+				end.y = e.pageY - this.offsetTop;
+				console.log("Starting from (" + start.x + ", " + start.y + ") --> (" + end.x + ", " + end.y + ")");
+				checkDragSphere(end.x, end.y, "bottom");
+				checkDragSphere(end.x, end.y, "top");
+			}
+		}, false);
+		
+		canvas.addEventListener("mouseup", function(e) {
+			flag = 0;
+			resetHits();
+		}, false);
+	</script>
+	<script>
+		window.addEventListener('resize', function(e) {
+			iterateSimulation(canvas, context);
+		})
+		document.getElementById("go").onclick = function() {
+			inAction = true;
+			simTimer = setInterval(function() {
+				iterateSimulation(canvas, context)
+			}, 0.5);
+		};
+		document.getElementById("restart").onclick = function() {
+			inAction = false;
+			clearInterval(simTimer);
+			hardReset();
+		};
 	</script>
 </html>
