@@ -43,9 +43,11 @@ public void iterate()
 
 	k1 = derivative(t,x);
 		
+	System.out.println("x: " + x[0] + ", " + x[1] + ", " + x[2] + ", " + x[3]);
+	System.out.println("k1: " + k1[0] + ", " + k1[1] + ", " + k1[2] + ", " + k1[3]);
 	for (i=0;i<n;i++)
 	    x1[i]=x[i]+dt*k1[i]/2.0;
-
+	System.out.println("x1: " + x1[0] + ", " + x1[1] + ", " + x1[2] + ", " + x1[3]);
 	k2 = derivative(t+dt/2,x1);
 
 	for (i=0;i<n;i++)

@@ -76,29 +76,8 @@ var defaultYTopCharge = yTopCharge;
 // }
 /*** End ***/
 
-function checkDragSphere(ex, ey, type) {
-	if (type == "bottom") {
-		if (ex < xBottomCharge + radiusCharge && ex > xBottomCharge - radiusCharge &&
-			ey < yBottomCharge + radiusCharge && ey > yBottomCharge - radiusCharge) {
-			bottomChargeCircleObject.hit = 1;
-			xBottomCharge = ex;
-			yBottomCharge = ey;
-			console.log("bottom hit");
-			repaint();
-		}
-	}
-	else if (type == 'top') {
-		if (ex < xTopCharge + radiusCharge && ex > xTopCharge - radiusCharge &&
-			ey < yTopCharge + radiusCharge && ey > yTopCharge - radiusCharge) {
-			topChargeCircleObject.hit = 1;
-			xTopCharge = ex;
-			yTopCharge = ey;
-			console.log("top hit");
-			repaint();
-		}
-	}
-}
 
+/*** Reset Methods ***/
 function resetHits() {
 	bottomChargeCircleObject.hit = 0;
 	topChargeCircleObject.hit = 0;
@@ -127,6 +106,12 @@ function hardReset() {
 	repaint();
 }
 
+function repaint() {
+	reset();
+	drawSetup();
+}
+
+/*** Draw Methods ***/
 function drawPoint(context, chargeMagnitude, x, y, r) {
 	context.beginPath();
 	context.arc(x, y, r, 0, 2 * Math.PI);
@@ -156,14 +141,34 @@ function drawSetup() {
 	drawPoint(context, chargeOfTop, xTopCharge, yTopCharge, radiusCharge);
 }
 
-function repaint() {
-	reset();
-	drawSetup();
+/*** Simulation Methods ***/
+function checkDragSphere(ex, ey, type) {
+	if (type == "bottom") {
+		if (ex < xBottomCharge + radiusCharge && ex > xBottomCharge - radiusCharge &&
+			ey < yBottomCharge + radiusCharge && ey > yBottomCharge - radiusCharge) {
+			bottomChargeCircleObject.hit = 1;
+			xBottomCharge = ex;
+			yBottomCharge = ey;
+			console.log("bottom hit");
+			repaint();
+		}
+	}
+	else if (type == 'top') {
+		if (ex < xTopCharge + radiusCharge && ex > xTopCharge - radiusCharge &&
+			ey < yTopCharge + radiusCharge && ey > yTopCharge - radiusCharge) {
+			topChargeCircleObject.hit = 1;
+			xTopCharge = ex;
+			yTopCharge = ey;
+			console.log("top hit");
+			repaint();
+		}
+	}
 }
 
 function withinBoundariesOfPanel(x, y, margin) {
 	return (x >= 0+margin && x <= 900-margin && y >= 30+margin && y <= 600-margin);
 }
+
 
 function drawPointChargeFieldLines(line) {
 	while (line.ang < 2*Math.PI) {
@@ -384,6 +389,12 @@ function init() {
 	drawSetup();
 }
 
+function loadSliderVariables(dx_, vx_, vy_) {
+	dx = dx_;
+	vx = vx_;
+	vy = vy_;
+}
+
 function iterateSimulation(canvas, context) {
 	// console.log("drawing...");
 	if (!isInit) {
@@ -392,15 +403,31 @@ function iterateSimulation(canvas, context) {
 	}
 	if (inAction) {
 		if (!initAction) {
+			x[0] = 300;
+			x[1] = (height/2);
+			x[2] = vx;
+			x[3] = vy;
+			console.log("vx: " + x[2] + ", vy: " + x[3]);
+
+			xold[0] = x[0];
+			xold[1] = x[1];
+			xold[2] = x[2];
+			xold[3] = x[3];
+
+			nint = new RKDemo(timeValue, x, 0.01);
 			nint.setPotentialValues(chargeOfPoint, chargeOfBottom, chargeOfTop, xBottomCharge, yBottomCharge, xTopCharge, yTopCharge);
 			initAction = true;
 		}
+		// nint.iterate();
+		// nint.log();
 		if (timeValue < timeMax && withinBoundariesOfPanel((xPoint - radiusPoint/2), (yPoint - radiusPoint/2), 5) &&
 								   withinBoundariesOfPanel((xPoint + radiusPoint/2), (yPoint + radiusPoint/2), 5)) {
 			xPoint = xold[0];
 			yPoint = xold[1];
+			console.log("withinBoundaries = (" + withinBoundariesOfPanel((xPoint - radiusPoint/2), (yPoint - radiusPoint/2), 5) + ", " + withinBoundariesOfPanel((xPoint + radiusPoint/2), (yPoint + radiusPoint/2), 5) + ")");
 			drawIteration(x, xold, nint, line);
 		} else {
+			console.log("violated: " + xPoint + ", " + yPoint);
 			inAction = false;
 			initAction = false;
 			reset();

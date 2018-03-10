@@ -31,8 +31,8 @@ class RKDemo {
 		var compy;
 
 		var y = new Array(4);
-		y[0] = i_x[2];
-		y[1] = i_x[3];
+		y[0] = parseFloat(i_x[2]);
+		y[1] = parseFloat(i_x[3]);
 
 		dist2 = Math.sqrt(Math.pow(i_x[0] - x2, 2) + Math.pow(i_x[1] - y2, 2));
 		dist3 = Math.sqrt(Math.pow(i_x[0] - x3, 2) + Math.pow(i_x[1] - y3, 2));
@@ -41,8 +41,8 @@ class RKDemo {
 		compy = q2 * (i_x[1] - y2) / Math.pow(dist2, 3) + q3 * (i_x[1] - y3) / Math.pow(dist3,3);
 
 		//  restrict to one dimensional motion 
-		y[2] = consta * q1 * compx;
-		y[3] = consta * q1 * compy;
+		y[2] = parseFloat(consta * q1 * compx);
+		y[3] = parseFloat(consta * q1 * compy);
 
 		// console.log("q1: " + q1);
 		// console.log("q2: " + q2);
@@ -56,7 +56,7 @@ class RKDemo {
 		// console.log("consta: " + consta);
 		// console.log("compx: " + compx);
 		// console.log("compy: " + compy);
-		// console.log("y[0] = " + y[0] + " y[1] = " + y[1] + " y[2] = " + y[2] + " y[3] = "+y[3]);
+		console.log("y[0] = " + y[0] + " y[1] = " + y[1] + " y[2] = " + y[2] + " y[3] = "+y[3]);
 		return y;
 	}
 
@@ -71,14 +71,14 @@ class RKDemo {
 	}
 
 	log() {
-		console.log("t = " + this.t);
-		console.log("dt = " + this.dt);
-		console.log("n = " + this.n);
-		console.log("x = " + this.x);
-		console.log("k1 = " + this.k1);
-		console.log("k2 = " + this.k2);
-		console.log("k3 = " + this.k3);
-		console.log("k4 = " + this.k4);
+		// console.log("t = " + this.t);
+		// console.log("dt = " + this.dt);
+		// console.log("n = " + this.n);
+		// console.log("x = " + this.x);
+		// console.log("k1 = " + this.k1);
+		// console.log("k2 = " + this.k2);
+		// console.log("k3 = " + this.k3);
+		// console.log("k4 = " + this.k4);
 	}
 
 	iterate() {
@@ -91,22 +91,28 @@ class RKDemo {
 		// console.log(this.k1 + ", " + this.k2 + ", " + this.k3 + ", " + this.k4 + ", " + this.t);
 		// console.log("this.k1... " + this.k1);
 
+		console.log("x: " + this.x[0] + ", " + this.x[1] + ", " + this.x[2] + ", " + this.x[3]);
+		console.log("k1: " + this.k1[0] + ", " + this.k1[1] + ", " + this.k1[2] + ", " + this.k1[3]);
 		for (var i = 0; i < this.n; i++) {
-		    x1[i] = this.x[i] + this.dt * this.k1[i]/2.0;
+		    x1[i] = parseFloat(this.x[i]) + (parseFloat(this.dt) * parseFloat(this.k1[i]/2.0));
 		}
+		console.log("x1: " + x1[0] + ", " + x1[1] + ", " + x1[2] + ", " + x1[3] + ", dt: " + this.dt);
+		
 		this.k2 = this.derivative(this.t + this.dt/2, x1);
+		
 		for (var i = 0; i < this.n; i++) {
-		    x1[i] = this.x[i] + this.dt * this.k2[i]/2.0;
+		    x1[i] = parseFloat(this.x[i]) + (parseFloat(this.dt) * parseFloat(this.k2[i]/2.0));
 		}
 		this.k3 = this.derivative(this.t + this.dt/2, x1);
 		for (var i = 0; i < this.n; i++) {
-			x1[i] = this.x[i] + this.dt * this.k3[i];
+			x1[i] = parseFloat(this.x[i]) + (parseFloat(this.dt) * parseFloat(this.k3[i]));
 		}
 		this.k4 = this.derivative(this.t + this.dt, x1);
 		for (var i = 0; i < this.n; i++) {
-		    this.x[i] += this.dt/6.0 * (this.k1[i] + 2.0*this.k2[i] + 2.0*this.k3[i] + this.k4[i]);
+		    this.x[i] = parseFloat(this.x[i]) + (parseFloat(this.dt/6.0) * (parseFloat(this.k1[i]) + parseFloat(2.0*this.k2[i]) + parseFloat(2.0*this.k3[i]) + parseFloat(this.k4[i])));
 		}
-		this.t += this.dt;
+		
+		this.t += parseFloat(this.dt);
 		// console.log("this.k1: " + this.k1);
 		// console.log("this.k2: " + this.k2);
 		// console.log("this.k3: " + this.k3);

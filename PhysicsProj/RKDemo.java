@@ -60,7 +60,7 @@ public class RKDemo extends RKInt {
 		//  restrict to one dimensional motion 
 		y[2] = consta * q1 * compx;
 		y[3] = consta * q1 * compy;
-		// System.out.println("y[0]="+y[0] + " y[1]="+y[1] + " y[2]="+y[2] + " y[3]="+y[3]);
+		System.out.println("y[0] = "+y[0] + " y[1] = "+y[1] + " y[2] = "+y[2] + " y[3] = "+y[3]);
 		// System.out.println("compx "+ compx + " compy "+ compy);
 		return y;
 	}
