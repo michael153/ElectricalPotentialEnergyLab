@@ -178,40 +178,38 @@
 			if (flag === 1) {
 				end.x = e.pageX - this.offsetLeft;
 				end.y = e.pageY - this.offsetTop;
-				if (!inAction) {
-					if (bottomClicked) {
-						updateBottomSphere(end.x, end.y);
-						if (showRuler)
-							drawRuler(context);
-					}
-					if (topClicked) {
-						updateTopSphere(end.x, end.y);
-						if (showRuler)
-							drawRuler(context);
-					}
-					if (rulerEndClicked) {
-						rulerAngToHorizontal = getAngle(end.x - rulerX, end.y - rulerY);
-						rulerLength = getDist(end.x - rulerX, end.y - rulerY);
-						repaint(context);
+				if (bottomClicked) {
+					updateBottomSphere(context, end.x, end.y);
+					if (showRuler)
 						drawRuler(context);
-					}
-					if (rulerStartClicked) {
-						var originalEndX = rulerX + rulerLength*Math.cos(toRadians(rulerAngToHorizontal));
-						var originalEndY = rulerY + rulerLength*Math.sin(toRadians(rulerAngToHorizontal));
-						rulerLength = getDist(originalEndX - end.x, originalEndY - end.y);
-						rulerAngToHorizontal = getAngle(originalEndX - end.x, originalEndY - end.y);
-						rulerX = end.x;
-						rulerY = end.y;
-						repaint(context);
+				}
+				if (topClicked) {
+					updateTopSphere(context, end.x, end.y);
+					if (showRuler)
 						drawRuler(context);
-					}
-					if (rulerClicked) {
-						// console.log("New ruler x, y: " + rulerX + ", " + rulerY);
-						rulerX = end.x - rulerClickOffset*Math.cos(toRadians(rulerAngToHorizontal));
-						rulerY = end.y - rulerClickOffset*Math.sin(toRadians(rulerAngToHorizontal));
-						repaint(context);
-						drawRuler(context);
-					}
+				}
+				if (rulerEndClicked) {
+					rulerAngToHorizontal = getAngle(end.x - rulerX, end.y - rulerY);
+					rulerLength = getDist(end.x - rulerX, end.y - rulerY);
+					repaint(context);
+					drawRuler(context);
+				}
+				if (rulerStartClicked) {
+					var originalEndX = rulerX + rulerLength*Math.cos(toRadians(rulerAngToHorizontal));
+					var originalEndY = rulerY + rulerLength*Math.sin(toRadians(rulerAngToHorizontal));
+					rulerLength = getDist(originalEndX - end.x, originalEndY - end.y);
+					rulerAngToHorizontal = getAngle(originalEndX - end.x, originalEndY - end.y);
+					rulerX = end.x;
+					rulerY = end.y;
+					repaint(context);
+					drawRuler(context);
+				}
+				if (rulerClicked) {
+					// console.log("New ruler x, y: " + rulerX + ", " + rulerY);
+					rulerX = end.x - rulerClickOffset*Math.cos(toRadians(rulerAngToHorizontal));
+					rulerY = end.y - rulerClickOffset*Math.sin(toRadians(rulerAngToHorizontal));
+					repaint(context);
+					drawRuler(context);
 				}
 			}
 		}, false);
@@ -253,20 +251,20 @@
 			clearInterval(simTimer);
 			hardReset(context);
 			// Reset slider values
-			dx__ = defaultDx;
-			vx__ = defaultVx;
-			vy__ = defaultVy;
+			// dx__ = defaultDx;
+			// vx__ = defaultVx;
+			// vy__ = defaultVy;
 			// Reset initial dx, vx, vy as used in backend
-			dx = dx__;
-			vx = vx__;
-			vy = vy__;
+			// dx = dx__;
+			// vx = vx__;
+			// vy = vy__;
 			// Reset HTML values
-			document.getElementById('dx').value = dx__;
-			document.getElementById('vx').value = vx__;
-			document.getElementById('vy').value = vy__;
-			document.getElementById('dxOutput').innerHTML = dx__;
-			document.getElementById('vxOutput').innerHTML = vx__;
-			document.getElementById('vyOutput').innerHTML = vy__;
+			// document.getElementById('dx').value = dx__;
+			// document.getElementById('vx').value = vx__;
+			// document.getElementById('vy').value = vy__;
+			// document.getElementById('dxOutput').innerHTML = dx__;
+			// document.getElementById('vxOutput').innerHTML = vx__;
+			// document.getElementById('vyOutput').innerHTML = vy__;
 		};
 	</script>
 </html>

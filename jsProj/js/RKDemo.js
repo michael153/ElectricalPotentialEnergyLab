@@ -82,24 +82,13 @@ class RKDemo {
 	}
 
 	iterate() {
-		// console.log("Start of iterate..." + this.k1 + ", " + this.k2 + ", " + this.k3 + ", " + this.k4 + ", " + this.t);
 		var i;
 		var x1 = new Array(this.n);
-		// console.log("this.x: " + this.x)
 		this.k1 = this.derivative(this.t, this.x);
-
-		// console.log(this.k1 + ", " + this.k2 + ", " + this.k3 + ", " + this.k4 + ", " + this.t);
-		// console.log("this.k1... " + this.k1);
-
-		// console.log("x: " + this.x[0] + ", " + this.x[1] + ", " + this.x[2] + ", " + this.x[3]);
-		// console.log("k1: " + this.k1[0] + ", " + this.k1[1] + ", " + this.k1[2] + ", " + this.k1[3]);
 		for (var i = 0; i < this.n; i++) {
 		    x1[i] = parseFloat(this.x[i]) + (parseFloat(this.dt) * parseFloat(this.k1[i]/2.0));
 		}
-		// console.log("x1: " + x1[0] + ", " + x1[1] + ", " + x1[2] + ", " + x1[3] + ", dt: " + this.dt);
-		
 		this.k2 = this.derivative(this.t + this.dt/2, x1);
-		
 		for (var i = 0; i < this.n; i++) {
 		    x1[i] = parseFloat(this.x[i]) + (parseFloat(this.dt) * parseFloat(this.k2[i]/2.0));
 		}
@@ -111,12 +100,6 @@ class RKDemo {
 		for (var i = 0; i < this.n; i++) {
 		    this.x[i] = parseFloat(this.x[i]) + (parseFloat(this.dt/6.0) * (parseFloat(this.k1[i]) + parseFloat(2.0*this.k2[i]) + parseFloat(2.0*this.k3[i]) + parseFloat(this.k4[i])));
 		}
-		
 		this.t += parseFloat(this.dt);
-		// console.log("this.k1: " + this.k1);
-		// console.log("this.k2: " + this.k2);
-		// console.log("this.k3: " + this.k3);
-		// console.log("this.k4: " + this.k4);
-		// console.log("this.t: " + this.t);
 	}
 }
