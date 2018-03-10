@@ -1,7 +1,5 @@
-// require('RKDemo.js');
-// require('Circle.js')
-
 /*** Simulation Variables ***/
+
 var height = 600;
 var width = 900;
 var radiusCharge = 20; //radius of spheres
@@ -62,19 +60,15 @@ var defaultYTopCharge = yTopCharge;
 
 
 
-/*** For Testing Purposes ***/
-// x = new Array(4);
-// x[0] = 300;
-// x[1] = 300; // height/2;
-// x[2] = 300.0; //vx
-// x[3] = 50.0; //vy
-// var nint = new RKDemo(100, x, .01);
-// nint.setPotentialValues(-1.0, 10.0, 10.0, 450, 450, 450, 150);
-// function test() {
-// 	console.log("Calling test()...");
-// 	nint.iterate();
-// }
-/*** End ***/
+var showRuler = false;
+var rulerClicked = false;
+var rulerStartClicked = false;
+var rulerEndClicked = false;
+var rulerX = 30;
+var rulerY = 30;
+var rulerClickOffset; 
+var rulerLength = 500;
+var rulerAngToHorizontal = 30.0;
 
 
 /*** Reset Methods ***/
@@ -83,12 +77,12 @@ function resetHits() {
 	topChargeCircleObject.hit = 0;
 }
 
-function reset() {
+function reset(context) {
 	context.strokeStyle = 'black';
 	context.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-function hardReset() {
+function hardReset(context) {
 	xPoint = defaultXPoint;
 	yPoint = defaultYPoint;
 	xBottomCharge = defaultXBottomCharge;
@@ -103,12 +97,12 @@ function hardReset() {
 	topChargeCircleObject.cy = defaultYTopCharge;
 	timeValue = 0;
 	resetHits();
-	repaint();
+	repaint(context);
 }
 
-function repaint() {
-	reset();
-	drawSetup();
+function repaint(context) {
+	reset(context);
+	drawSetup(context);
 }
 
 /*** Draw Methods ***/
@@ -131,7 +125,58 @@ function drawLine(context, color, x1, y1, x2, y2) {
 	context.stroke();
 }
 
-function drawSetup() {
+function putRulerData(context) {
+	context.font = "12px Arial"; 
+	context.textAlign = "right";
+	context.fillStyle = 'black';
+	context.fillText("Ruler Length: " + Math.round(rulerLength * 100) / 100, 890 , 25);
+	context.fillText("Ruler Angle: " + (360 - rulerAngToHorizontal.toFixed(2)).toFixed(2), 890 , 45);
+	context.stroke();
+}
+
+function drawRuler(context) {
+
+	var halfWidth = 10;
+	var freq = 10;
+	var offset1x = rulerX + halfWidth*Math.cos(toRadians(90 + rulerAngToHorizontal));
+	var offset1y = rulerY + halfWidth*Math.sin(toRadians(90 + rulerAngToHorizontal));
+	var offset2x = rulerX - halfWidth*Math.cos(toRadians(90 + rulerAngToHorizontal));
+	var offset2y = rulerY - halfWidth*Math.sin(toRadians(90 + rulerAngToHorizontal));
+	var rulerLengthX = rulerLength*Math.cos(toRadians(rulerAngToHorizontal));
+	var rulerLengthY = rulerLength*Math.sin(toRadians(rulerAngToHorizontal));
+
+	// Draw Ticks
+	for (var i = 0; i < rulerLength/freq; i++) {
+		var pX = offset1x + (i*freq)*Math.cos(toRadians(rulerAngToHorizontal));
+		var pY = offset1y + (i*freq)*Math.sin(toRadians(rulerAngToHorizontal));
+		var len = (4 + 2*(i%2) + 2*(i%4));
+		console.log("tick(X, Y): " + (pX - 3*Math.cos(toRadians(90 + rulerAngToHorizontal))) + ", " + (pY - 3*Math.sin(toRadians(90 + rulerAngToHorizontal))));
+		drawLine(context, 'blue', pX, pY, pX - len*Math.cos(toRadians(90 + rulerAngToHorizontal)), pY - len*Math.sin(toRadians(90 + rulerAngToHorizontal)));
+	}
+
+	// Draw Rectangle Ends
+	drawLine(context, 'blue', offset1x, offset1y, offset2x, offset2y);
+	drawLine(context, 'blue', offset1x + rulerLengthX, offset1y + rulerLengthY,
+							  offset2x + rulerLengthX, offset2y + rulerLengthY);
+	
+	// Draw Sides
+	drawLine(context, 'blue', offset1x, offset1y, offset1x + rulerLengthX,
+											  	  offset1y + rulerLengthY);
+	drawLine(context, 'blue', offset2x, offset2y, offset2x + rulerLengthX,
+											  	  offset2y + rulerLengthY);
+
+	//Draw Middle Line
+	// drawLine(context, 'blue', rulerX, rulerY, rulerX + rulerLength*Math.cos(toRadians(rulerAngToHorizontal)),
+	// 										  rulerY + rulerLength*Math.sin(toRadians(rulerAngToHorizontal)));
+
+	// drawLine(context, 'blue', rulerX, rulerY, rulerX + rulerLength*Math.cos(toRadians(rulerAngToHorizontal)),
+	// 										  rulerY + rulerLength*Math.sin(toRadians(rulerAngToHorizontal)));
+	// drawLine(context, 'blue', rulerX, rulerY, rulerX + rulerLength*Math.cos(toRadians(rulerAngToHorizontal)),
+	// 										  rulerY + rulerLength*Math.sin(toRadians(rulerAngToHorizontal)));
+	putRulerData(context);
+}
+
+function drawSetup(context) {
 	if (withinBoundariesOfPanel((xPoint - radiusPoint/2), (yPoint - radiusPoint/2), 5) &&
 		withinBoundariesOfPanel((xPoint + radiusPoint/2), (yPoint + radiusPoint/2), 5)) {
 			drawPoint(context, chargeOfPoint, xPoint, yPoint, radiusPoint);
@@ -142,35 +187,33 @@ function drawSetup() {
 }
 
 /*** Simulation Methods ***/
-function checkDragSphere(ex, ey, type) {
-	if (type == "bottom") {
-		if (ex < xBottomCharge + radiusCharge && ex > xBottomCharge - radiusCharge &&
-			ey < yBottomCharge + radiusCharge && ey > yBottomCharge - radiusCharge) {
-			bottomChargeCircleObject.hit = 1;
-			xBottomCharge = ex;
-			yBottomCharge = ey;
-			console.log("bottom hit");
-			repaint();
-		}
-	}
-	else if (type == 'top') {
-		if (ex < xTopCharge + radiusCharge && ex > xTopCharge - radiusCharge &&
-			ey < yTopCharge + radiusCharge && ey > yTopCharge - radiusCharge) {
-			topChargeCircleObject.hit = 1;
-			xTopCharge = ex;
-			yTopCharge = ey;
-			console.log("top hit");
-			repaint();
-		}
-	}
-}
-
 function withinBoundariesOfPanel(x, y, margin) {
 	return (x >= 0+margin && x <= 900-margin && y >= 30+margin && y <= 600-margin);
 }
 
+function withinBottomSphere(x, y) {
+	return (x < xBottomCharge + radiusCharge && x > xBottomCharge - radiusCharge &&
+			y < yBottomCharge + radiusCharge && y > yBottomCharge - radiusCharge);
+}
 
-function drawPointChargeFieldLines(line) {
+function withinTopSphere(x, y) {
+	return (x < xTopCharge + radiusCharge && x > xTopCharge - radiusCharge &&
+			y < yTopCharge + radiusCharge && y > yTopCharge - radiusCharge);
+}
+
+function updateBottomSphere(x, y) {
+	xBottomCharge = x;
+	yBottomCharge = y;
+	repaint();
+}
+
+function updateTopSphere(x, y) {
+	xTopCharge = x;
+	yTopCharge = y;
+	repaint();
+}
+
+function drawPointChargeFieldLines(context, line) {
 	while (line.ang < 2*Math.PI) {
 		// console.log("line.ang: " + line.ang);
 		line.sx = xPoint - 10 * Math.cos(line.ang);
@@ -217,7 +260,7 @@ function drawPointChargeFieldLines(line) {
 	}
 }
 
-function drawChargeOfBottomFieldLines(line) {
+function drawChargeOfBottomFieldLines(context, line) {
 	while (line.ang < 2*Math.PI) {
 		//line.ang *= (Math.PI/180.);
 		line.sx = xBottomCharge + 10 * Math.cos(line.ang);
@@ -265,7 +308,7 @@ function drawChargeOfBottomFieldLines(line) {
 	}
 }
 
-function drawChargeOfTopFieldLines(line) {
+function drawChargeOfTopFieldLines(context, line) {
 	while(line.ang < 2*Math.PI) {
 		line.sx = xTopCharge + 10 * Math.cos(line.ang);
 		line.sy = yTopCharge + 10 * Math.sin(line.ang);
@@ -311,9 +354,9 @@ function drawChargeOfTopFieldLines(line) {
 	}
 }
 
-function drawIteration(x, xold, nint, line) {
+function drawIteration(context, x, xold, nint, line) {
 	// clear page to create animation
-	reset();
+	reset(context);
 	comp = 1;
 	pointCircleObject.cx = xPoint;
 	pointCircleObject.cy = yPoint;
@@ -321,25 +364,25 @@ function drawIteration(x, xold, nint, line) {
 	xPoint = xold[0];
 	yPoint = xold[1];
 
-	drawSetup();
+	drawSetup(context);
 
 	// draw field lines for pointCharge
 	line.ang = Math.PI/8.;
 	comp = 1;
 	istop = 0;
-	drawPointChargeFieldLines(line);
+	drawPointChargeFieldLines(context, line);
 
 	// draw field lines for chargeOfBottom
 	line.ang = Math.PI/8.;
 	comp = 1;
 	istop = 0;
-	drawChargeOfBottomFieldLines(line);
+	drawChargeOfBottomFieldLines(context, line);
 
 	// draw field lines for chargeOfTop
 	line.ang = Math.PI/8.;
 	comp = 1;
 	istop = 0;
-	drawChargeOfTopFieldLines(line);
+	drawChargeOfTopFieldLines(context, line);
 
 	bconecx = pointCircleObject.cx;
 	bconecy = pointCircleObject.cy;
@@ -352,6 +395,9 @@ function drawIteration(x, xold, nint, line) {
 	xold[3] = nint.x[3];
 
 	timeValue += dTime;
+
+	if (showRuler)
+		drawRuler(context);
 	// console.log("done");
 }
 
@@ -364,7 +410,7 @@ var xold;
 var nint;
 var line;
 
-function init() {
+function init(context) {
 	x = new Array(4);
 	x[0] = 300;
 	x[1] = (height/2);
@@ -386,17 +432,10 @@ function init() {
 	line = new Line(0.0,0.0,0.0,0.0);
 
 	isInit = true;
-	drawSetup();
-}
-
-function loadSliderVariables(dx_, vx_, vy_) {
-	dx = dx_;
-	vx = vx_;
-	vy = vy_;
+	drawSetup(context);
 }
 
 function iterateSimulation(canvas, context) {
-	// console.log("drawing...");
 	if (!isInit) {
 		isInit = true;
 		init();
@@ -407,31 +446,26 @@ function iterateSimulation(canvas, context) {
 			x[1] = (height/2);
 			x[2] = vx;
 			x[3] = vy;
-			console.log("vx: " + x[2] + ", vy: " + x[3]);
-
 			xold[0] = x[0];
 			xold[1] = x[1];
 			xold[2] = x[2];
 			xold[3] = x[3];
-
 			nint = new RKDemo(timeValue, x, 0.01);
 			nint.setPotentialValues(chargeOfPoint, chargeOfBottom, chargeOfTop, xBottomCharge, yBottomCharge, xTopCharge, yTopCharge);
 			initAction = true;
 		}
-		// nint.iterate();
-		// nint.log();
 		if (timeValue < timeMax && withinBoundariesOfPanel((xPoint - radiusPoint/2), (yPoint - radiusPoint/2), 5) &&
 								   withinBoundariesOfPanel((xPoint + radiusPoint/2), (yPoint + radiusPoint/2), 5)) {
 			xPoint = xold[0];
 			yPoint = xold[1];
-			console.log("withinBoundaries = (" + withinBoundariesOfPanel((xPoint - radiusPoint/2), (yPoint - radiusPoint/2), 5) + ", " + withinBoundariesOfPanel((xPoint + radiusPoint/2), (yPoint + radiusPoint/2), 5) + ")");
-			drawIteration(x, xold, nint, line);
+			drawIteration(context, x, xold, nint, line);
 		} else {
-			console.log("violated: " + xPoint + ", " + yPoint);
 			inAction = false;
 			initAction = false;
-			reset();
-			drawSetup();
+			reset(context);
+			drawSetup(context);
+			if (showRuler)
+				drawRuler(context);
 			clearInterval(simTimer);
 		}
 	}

@@ -56,7 +56,7 @@ class RKDemo {
 		// console.log("consta: " + consta);
 		// console.log("compx: " + compx);
 		// console.log("compy: " + compy);
-		console.log("y[0] = " + y[0] + " y[1] = " + y[1] + " y[2] = " + y[2] + " y[3] = "+y[3]);
+		// console.log("y[0] = " + y[0] + " y[1] = " + y[1] + " y[2] = " + y[2] + " y[3] = "+y[3]);
 		return y;
 	}
 
@@ -91,12 +91,12 @@ class RKDemo {
 		// console.log(this.k1 + ", " + this.k2 + ", " + this.k3 + ", " + this.k4 + ", " + this.t);
 		// console.log("this.k1... " + this.k1);
 
-		console.log("x: " + this.x[0] + ", " + this.x[1] + ", " + this.x[2] + ", " + this.x[3]);
-		console.log("k1: " + this.k1[0] + ", " + this.k1[1] + ", " + this.k1[2] + ", " + this.k1[3]);
+		// console.log("x: " + this.x[0] + ", " + this.x[1] + ", " + this.x[2] + ", " + this.x[3]);
+		// console.log("k1: " + this.k1[0] + ", " + this.k1[1] + ", " + this.k1[2] + ", " + this.k1[3]);
 		for (var i = 0; i < this.n; i++) {
 		    x1[i] = parseFloat(this.x[i]) + (parseFloat(this.dt) * parseFloat(this.k1[i]/2.0));
 		}
-		console.log("x1: " + x1[0] + ", " + x1[1] + ", " + x1[2] + ", " + x1[3] + ", dt: " + this.dt);
+		// console.log("x1: " + x1[0] + ", " + x1[1] + ", " + x1[2] + ", " + x1[3] + ", dt: " + this.dt);
 		
 		this.k2 = this.derivative(this.t + this.dt/2, x1);
 		
