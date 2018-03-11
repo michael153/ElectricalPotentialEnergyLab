@@ -1,9 +1,1 @@
-class Line {
-	constructor(start_x, start_y, end_x, end_y) {
-		this.sx = start_x;
-		this.sy = start_y;
-		this.ex = end_x;
-		this.ey = end_y;
-		this.ang = 0.0;
-	}
-}
+var Line=function(a,b,c,d){this.sx=a;this.sy=b;this.ex=c;this.ey=d;this.ang=0};
