@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang = "en-us">
+	<head>
+		<meta charset = "UTF-8">
+		<title>Electrical Potential Energy Lab</title>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="js/Circle.js"></script>
+		<script src="js/Line.js"></script>
+		<script src="js/MotionVariable.js"></script>
+		<script src="js/Simulation.js"></script>
+		<style>
+			body {
+				font-family: "Arial", Arial, serif;
+				font-size: 14px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id = "top" align = "center" style = "vertical-align: middle">
+			<input type="submit" id = 'ruler' value="Enable Ruler"/>
+
+			<input type="range" min="5" max="20" value="5" class="slider" id="dx">
+			<label id = "dxLabel">Simulation Speed = </label><output id="dxOutput">5</output>
+			
+			<input type="range" min="0" max="700" value="0" class="slider" id="vx">
+			<label id = "dxLabel">vx = </label><output id="vxOutput">0</output>
+			
+			<input type="range" min="0" max="700" value="0" class="slider" id="vy">
+			<label id = "dyLabel">vy = </label><output id="vyOutput">0</output>
+			
+			<input type="submit" id = 'go' value="Go"/>
+			<input type="submit" id = 'restart' value="Reset"/>
+		</div>
+		<br><br>
+		<div id = "container" align = "center">
+			<canvas id="panel" width="900" height="600" style="border:1px solid #000000;"></canvas>
+		</div>
+	</body>
+
+	<script>
+		function toDegrees(angle) {
+			return angle * (180 / Math.PI);
+		}
+
+		function toRadians(angle) {
+			return angle * (Math.PI / 180);
+		}
+
+		function getDist(x1, y1) {
+			return Math.sqrt(x1*x1 + y1*y1);
+		}
+
+		var angleTolerance = 0.15;
+
+		function angleAssist() {
+			if (Math.abs(rulerAngToHorizontal) < angleTolerance)
+				rulerAngToHorizontal = 0;
+			else if (Math.abs(rulerAngToHorizontal - 90) < angleTolerance)
+				rulerAngToHorizontal = 90;
+			else if (Math.abs(rulerAngToHorizontal - 180) < angleTolerance)
+				rulerAngToHorizontal = 180;
+			else if (Math.abs(rulerAngToHorizontal - 270) < angleTolerance)
+				rulerAngToHorizontal = 270;
+			else if (Math.abs(rulerAngToHorizontal - 360) < angleTolerance)
+				rulerAngToHorizontal = 360;
+		}
+
+		function getAngle(x, y) {
+			if (x === 0) {
+				if (y > 0) return 90.0;
+				else return 270.0;
+			}
+			else if (y === 0) {
+				if (x < 0) return 180.0;
+				else return 0.0;
+			}
+			else {
+				ang = toDegrees(Math.atan(y/x));
+				if (y <= 0 && x >= 0)
+					ang += 360;
+				else if (y <= 0 && x <= 0)
+					ang += 180;
+				else if (x <= 0 && y >= 0)
+					ang += 180;
+				return ang;
+			}
+		}
+
+		function clickedRuler(x, y) {
+			var vx = rulerLength*Math.cos(toRadians(rulerAngToHorizontal));
+			var vy = rulerLength*Math.sin(toRadians(rulerAngToHorizontal));
+			
+			var ux = x - rulerX;
+			var uy = y - rulerY;
+			
+			var dot = vx*ux + vy*uy;
+			var magv = Math.sqrt(vx*vx + vy*vy);
+			var projv_Ux = vx*(dot/(magv*magv));
+			var projv_Uy = vy*(dot/(magv*magv));
+
+			var projX = Math.sqrt(projv_Ux*projv_Ux + projv_Uy*projv_Uy);
+			var projY = Math.sqrt((ux*ux + uy*uy) - projX*projX);
+
+			return (projX >= 0 && projX <= rulerLength && projY <= rulerWidth/2 && projY >= -rulerWidth/2);
+		}
+
+		var pivot;
+
+		function drawAngle(context) {
+			if (pivot == "start") {
+				console.log("Start");
+				context.setLineDash([5, 3]);
+				drawLine(context, 'black', rulerX, rulerY, rulerX + 20, rulerY);
+				drawLine(context, 'black', rulerX, rulerY, rulerX + 20*Math.cos(toRadians(rulerAngToHorizontal)), rulerY + 20*Math.sin(toRadians(rulerAngToHorizontal)));
+				context.setLineDash([])
+				if (Math.abs(rulerAngToHorizontal - 90) < angleTolerance) {
+					drawLine(context, 'black', rulerX, rulerY + 5, rulerX + 5, rulerY + 5);
+					drawLine(context, 'black', rulerX + 5, rulerY, rulerX + 5, rulerY + 5);
+				}
+				else if (Math.abs(rulerAngToHorizontal - 270) < angleTolerance) {
+					drawLine(context, 'black', rulerX, rulerY - 5, rulerX + 5, rulerY - 5);
+					drawLine(context, 'black', rulerX + 5, rulerY, rulerX + 5, rulerY - 5);
+				}
+				else {
+					context.beginPath();
+					context.strokeStyle = 'black';
+					context.fillStyle = "rgba(0, 0, 200, 0)";
+					if (rulerAngToHorizontal > 180)
+						context.arc(rulerX, rulerY, 5, 0, toRadians(rulerAngToHorizontal), true);
+					else
+						context.arc(rulerX, rulerY, 5, 0, toRadians(rulerAngToHorizontal), false);
+					context.fill();
+					context.stroke();
+				}
+			}
+			else if (pivot == "end") {
+				console.log("End");
+				context.setLineDash([5, 3]);
+				drawLine(context, 'black', rulerX + rulerLengthX, rulerY + rulerLengthY, rulerX  + rulerLengthX + 20, rulerY + rulerLengthY);
+				drawLine(context, 'black', rulerX + rulerLengthX, rulerY + rulerLengthY,
+										   rulerX + rulerLengthX - 20*Math.cos(toRadians(rulerAngToHorizontal)),
+										   rulerY + rulerLengthY - 20*Math.sin(toRadians(rulerAngToHorizontal)));
+				context.setLineDash([])
+				if (Math.abs(rulerAngToHorizontal - 90) < angleTolerance) {
+					drawLine(context, 'black', rulerX + rulerLengthX, rulerY + rulerLengthY - 5, rulerX + rulerLengthX + 5, rulerY + rulerLengthY - 5);
+					drawLine(context, 'black', rulerX + rulerLengthX + 5, rulerY + rulerLengthY, rulerX + rulerLengthX + 5, rulerY + rulerLengthY - 5);
+				}
+				else if (Math.abs(rulerAngToHorizontal - 270) < angleTolerance) {
+					drawLine(context, 'black', rulerX + rulerLengthX, rulerY + rulerLengthY + 5, rulerX + rulerLengthX + 5, rulerY + rulerLengthY + 5);
+					drawLine(context, 'black', rulerX + rulerLengthX + 5, rulerY + rulerLengthY, rulerX + rulerLengthX + 5, rulerY + rulerLengthY + 5);
+				}
+				else {
+					context.beginPath();
+					context.strokeStyle = 'black';
+					context.fillStyle = "rgba(0, 0, 200, 0)";
+					if (rulerAngToHorizontal > 180)
+						context.arc(rulerX + rulerLengthX, rulerY + rulerLengthY, 5, 0, toRadians(rulerAngToHorizontal - 180), false);
+					else
+						context.arc(rulerX + rulerLengthX, rulerY + rulerLengthY, 5, 0, toRadians(180 + rulerAngToHorizontal), true);
+					context.fill();
+					context.stroke();
+				}
+			}
+		}
+
+		function clickedRulerStart(x, y) {
+			return getDist(x - rulerX, y - rulerY) < 10;
+		}
+
+		function clickedRulerEnd(x, y) {
+			return (getDist(x - (rulerX + rulerLength*Math.cos(toRadians(rulerAngToHorizontal))),
+							y - (rulerY + rulerLength*Math.sin(toRadians(rulerAngToHorizontal)))) < 5);
+		}
+
+		document.getElementById("ruler").onclick = function() {
+			showRuler = !showRuler;
+			if (showRuler) {
+				document.getElementById("ruler").value= "Disable Ruler";
+				drawRuler(context);
+			}
+			else {
+				document.getElementById("ruler").value= "Enable Ruler";
+				repaint(context);
+			}
+		};
+	</script>
+
+
+	<!-- Window Setup -->
+	<script>
+		var canvas = document.getElementById("panel");
+		var context = canvas.getContext("2d");
+
+		window.onload = function() {
+			init(context);
+		}
+	</script>
+
+	<!-- Inputs Values -->
+	<script>
+		var dx__ = document.getElementById("dx").value;
+		var vx__ = document.getElementById("vx").value;
+		var vy__ = document.getElementById("vy").value;
+
+		document.getElementById("dx").oninput = function() {
+			dx__ = document.getElementById("dx").value;
+			document.getElementById('dxOutput').innerHTML = dx__;
+			dx = dx__;
+		};
+		document.getElementById("vx").oninput = function() {
+			vx__ = document.getElementById("vx").value;
+			document.getElementById('vxOutput').innerHTML = vx__;
+			vx = vx__;
+		};
+		document.getElementById("vy").oninput = function() {
+			vy__ = document.getElementById("vy").value;
+			document.getElementById('vyOutput').innerHTML = vy__;
+			vy = vy__;
+		};
+	</script>
+	
+	<!-- All the listeners -->
+	<script>
+		var start = {x: 0, y: 0};
+		var end = {x: 0, y: 0};
+		var dragRuler = false;
+		var bottomClicked = false;
+		var topClicked = false;
+		var flag = 0;
+
+		canvas.addEventListener("mousedown", function(e) {
+			start.x = e.pageX - this.offsetLeft;
+			start.y = e.pageY - this.offsetTop;
+			if (clickedRulerStart(start.x, start.y)) {
+				rulerStartClicked = true;
+			}
+			else if (clickedRulerEnd(start.x, start.y)) {
+				rulerEndClicked = true;
+			}
+			else if (clickedRuler(start.x, start.y)) {
+				rulerClicked = true;
+				rulerClickOffset = getDist(start.x - rulerX, start.y - rulerY);
+			}
+			else if (withinBottomSphere(start.x, start.y))
+				bottomClicked = true;
+			else if (withinTopSphere(start.x, start.y))
+				topClicked = true;
+			else if (showRuler) {
+				repaint(context);
+				dragRuler = true;
+			}
+			flag = 1;
+		}, false);
+		
+		canvas.addEventListener("mousemove", function(e) {
+			if (flag === 1) {
+				end.x = e.pageX - this.offsetLeft;
+				end.y = e.pageY - this.offsetTop;
+				// Move spheres
+				if (!inAction) {
+					if (bottomClicked) {
+						updateBottomSphere(context, end.x, end.y);
+						if (!dragRuler && showRuler)
+							drawRuler(context);
+					}
+					if (topClicked) {
+						updateTopSphere(context, end.x, end.y);
+						if (!dragRuler && showRuler)
+							drawRuler(context);
+					}
+				}
+				// Dragging New Ruler
+				if (dragRuler) {
+					if (getDist(end.x - start.x, end.y - start.y) > 50) {
+						console.log("Drag Ruler End");
+						rulerX = start.x;
+						rulerY = start.y;
+						rulerAngToHorizontal = getAngle(end.x - start.x, end.y - start.y);
+						rulerLength = getDist(end.x - start.x, end.y - start.y);
+						repaint(context);
+						angleAssist();
+						drawRuler(context);
+						pivot = "start";
+						drawAngle(context);
+					}
+				}
+				// Moving Existing Ruler
+				if (!dragRuler && showRuler) {
+					// Pivoting on Starting Point
+					if (rulerEndClicked) {
+						rulerAngToHorizontal = getAngle(end.x - rulerX, end.y - rulerY);
+						rulerLength = getDist(end.x - rulerX, end.y - rulerY);
+						if (rulerLength < 50) {
+							rulerLength = 50;
+						}
+						repaint(context);
+						angleAssist();
+						drawRuler(context);
+						pivot = "start";
+						drawAngle(context);
+					}
+					// Pivoting on Ending Point
+					if (rulerStartClicked) {
+						var originalEndX = rulerX + rulerLength*Math.cos(toRadians(rulerAngToHorizontal));
+						var originalEndY = rulerY + rulerLength*Math.sin(toRadians(rulerAngToHorizontal));
+						rulerLength = getDist(originalEndX - end.x, originalEndY - end.y);
+						if (rulerLength < 50) {
+							rulerLength = 50;
+						}
+						rulerAngToHorizontal = getAngle(originalEndX - end.x, originalEndY - end.y);
+						rulerX = end.x;
+						rulerY = end.y;
+						repaint(context);
+						angleAssist();
+						drawRuler(context);
+						pivot = "end";
+						drawAngle(context);
+					}
+					// Moving Ruler
+					if (rulerClicked) {
+						rulerX = end.x - rulerClickOffset*Math.cos(toRadians(rulerAngToHorizontal));
+						rulerY = end.y - rulerClickOffset*Math.sin(toRadians(rulerAngToHorizontal));
+						repaint(context);
+						drawRuler(context);
+					}
+				}
+			}
+		}, false);
+		
+		canvas.addEventListener("mouseup", function(e) {
+			repaint(context);
+			if (showRuler)
+				drawRuler(context);
+
+			end.x = e.pageX - this.offsetLeft;
+			end.y = e.pageY - this.offsetTop;
+
+			flag = 0;
+			dragRuler = false;
+			bottomClicked = false;
+			topClicked = false;
+			rulerClicked = false;
+			rulerStartClicked = false;
+			rulerEndClicked = false;
+			resetHits();
+		}, false);
+	</script>
+
+	<!-- Button actions -->
+	<script>
+		window.addEventListener('resize', function(e) {
+			height = canvas.height;
+			width = canvas.width;
+			iterateSimulation(canvas, context);
+		})
+		document.getElementById("go").onclick = function() {
+			timeValue = 0;
+			inAction = true;
+			xminVal = 100000000;
+			xmaxVal = -100000000;
+			yminVal = 100000000;
+			ymaxVal = -100000000;
+			dx = dx__;
+			vx = vx__;
+			vy = vy__;
+
+			simTimer = setInterval(function() {
+				iterateSimulation(canvas, context);
+			}, 6);
+		};
+		document.getElementById("restart").onclick = function() {
+			inAction = false;
+			isInit = false;
+			xminVal = 100000000;
+			xmaxVal = -100000000;
+			yminVal = 100000000;
+			ymaxVal = -100000000;
+			clearInterval(simTimer);
+			hardReset(context);
+		};
+	</script>
+</html>

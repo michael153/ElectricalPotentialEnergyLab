@@ -1,4 +1,4 @@
-class RKDemo {
+class MotionVariable {
 	constructor(i_t, i_x, i_dt) {
 		this.t = i_t;
 		this.dt = i_dt;

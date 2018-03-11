@@ -98,25 +98,40 @@ function hardReset(context) {
 	timeValue = 0;
 	resetHits();
 	repaint(context);
+	if (!dragRuler && showRuler)
+		drawRuler(context);
 }
 
 function repaint(context) {
 	reset(context);
 	drawSetup(context);
+	if (inAction) {
+		drawFieldLines(context, 'point', line);
+		drawFieldLines(context, 'bottom', line);
+		drawFieldLines(context, 'top', line);
+		putSimData(context);
+	}
 }
 
 /*** Draw Methods ***/
 function drawPoint(context, color, x, y, r) {
 	context.beginPath();
+	context.strokeStyle = color;
 	context.fillStyle = color;
 	context.arc(x, y, r, 0, 2 * Math.PI);
 	context.fill();
 	context.stroke();
 }
 
+function drawCharge(context, color, x, y, r) {
+	drawPoint(context, color, x, y, r);
+	drawPoint(context, 'white', x, y, 1);
+}
+
 function drawLine(context, color, x1, y1, x2, y2) {
 	context.beginPath();
 	context.strokeStyle = color;
+	context.fillStyle = color;
 	context.moveTo(x1, y1);
 	context.lineTo(x2, y2);
 	context.stroke();
@@ -127,45 +142,71 @@ function putRulerData(context) {
 	context.textAlign = "right";
 	context.fillStyle = 'black';
 	context.fillText("Ruler Length: " + Math.round(rulerLength * 100) / 100, 890 , 25);
-	context.fillText("Ruler Angle: " + (360 - rulerAngToHorizontal.toFixed(2)).toFixed(2), 890 , 45);
+	var angToPut = (360 - rulerAngToHorizontal.toFixed(2)).toFixed(2);
+	if (angToPut > 180) 
+		angToPut = (360 - angToPut).toFixed(2);
+	if (pivot == "end")
+		angToPut = (180 - angToPut).toFixed(2);
+	context.fillText("Ruler Angle: " + angToPut, 890 , 45);
 	context.stroke();
 }
 
+function putSimData(context) {
+	context.font = "12px Arial"; 
+	context.textAlign = "left";
+	context.fillStyle = 'black';
+	context.fillText("Min X-value: " + xminVal.toFixed(3), 10 , 25);
+	context.fillText("Max X-value: " + xmaxVal.toFixed(3), 10 , 45);
+	context.fillText("Min Y-value: " + yminVal.toFixed(3), 10 , 65);
+	context.fillText("Max Y-value: " + ymaxVal.toFixed(3), 10 , 85);
+	context.stroke();
+}
+
+var rulerWidth = 20;
+var rulerRectX = new Array(2);
+var rulerRectY = new Array(2);
+var rulerLengthX, rulerLengthY;
+
 function drawRuler(context) {
 
-	var halfWidth = 10;
+	
 	var freq = 10;
-	var offset1x = rulerX + halfWidth*Math.cos(toRadians(90 + rulerAngToHorizontal));
-	var offset1y = rulerY + halfWidth*Math.sin(toRadians(90 + rulerAngToHorizontal));
-	var offset2x = rulerX - halfWidth*Math.cos(toRadians(90 + rulerAngToHorizontal));
-	var offset2y = rulerY - halfWidth*Math.sin(toRadians(90 + rulerAngToHorizontal));
-	var rulerLengthX = rulerLength*Math.cos(toRadians(rulerAngToHorizontal));
-	var rulerLengthY = rulerLength*Math.sin(toRadians(rulerAngToHorizontal));
+	rulerRectX[0] = rulerX + (rulerWidth/2)*Math.cos(toRadians(90 + rulerAngToHorizontal));
+	rulerRectY[0] = rulerY + (rulerWidth/2)*Math.sin(toRadians(90 + rulerAngToHorizontal));
+	rulerRectX[1] = rulerX - (rulerWidth/2)*Math.cos(toRadians(90 + rulerAngToHorizontal));
+	rulerRectY[1] = rulerY - (rulerWidth/2)*Math.sin(toRadians(90 + rulerAngToHorizontal));
+	rulerLengthX = rulerLength*Math.cos(toRadians(rulerAngToHorizontal));
+	rulerLengthY = rulerLength*Math.sin(toRadians(rulerAngToHorizontal));
 
 	// Draw Ticks
 	for (var i = 0; i < rulerLength/freq; i++) {
-		var pX = offset1x + (i*freq)*Math.cos(toRadians(rulerAngToHorizontal));
-		var pY = offset1y + (i*freq)*Math.sin(toRadians(rulerAngToHorizontal));
+		var pX = rulerRectX[0] + (i*freq)*Math.cos(toRadians(rulerAngToHorizontal));
+		var pY = rulerRectY[0] + (i*freq)*Math.sin(toRadians(rulerAngToHorizontal));
 		var len = (4 + 2*(i%2) + 2*(i%4));
-		console.log("tick(X, Y): " + (pX - 3*Math.cos(toRadians(90 + rulerAngToHorizontal))) + ", " + (pY - 3*Math.sin(toRadians(90 + rulerAngToHorizontal))));
 		drawLine(context, 'blue', pX, pY, pX - len*Math.cos(toRadians(90 + rulerAngToHorizontal)), pY - len*Math.sin(toRadians(90 + rulerAngToHorizontal)));
 	}
 
 	// Draw Rectangle Ends
-	drawLine(context, 'blue', offset1x, offset1y, offset2x, offset2y);
-	drawLine(context, 'blue', offset1x + rulerLengthX, offset1y + rulerLengthY,
-							  offset2x + rulerLengthX, offset2y + rulerLengthY);
+	drawLine(context, 'blue', rulerRectX[0], rulerRectY[0], rulerRectX[1], rulerRectY[1]);
+	drawLine(context, 'blue', rulerRectX[0] + rulerLengthX, rulerRectY[0] + rulerLengthY,
+							  rulerRectX[1] + rulerLengthX, rulerRectY[1] + rulerLengthY);
 	
 	// Draw Sides
-	drawLine(context, 'blue', offset1x, offset1y, offset1x + rulerLengthX,
-											  	  offset1y + rulerLengthY);
-	drawLine(context, 'blue', offset2x, offset2y, offset2x + rulerLengthX,
-											  	  offset2y + rulerLengthY);
+	drawLine(context, 'blue', rulerRectX[0], rulerRectY[0], rulerRectX[0] + rulerLengthX, rulerRectY[0] + rulerLengthY);
+	drawLine(context, 'blue', rulerRectX[1], rulerRectY[1], rulerRectX[1] + rulerLengthX, rulerRectY[1] + rulerLengthY);
 
 
 	// Draw Endpoints
 	drawPoint(context, 'blue', rulerX, rulerY, 2);
 	drawPoint(context, 'blue', rulerX + rulerLengthX, rulerY + rulerLengthY, 2);
+
+
+	// var tempX1 = rulerRectX[0] + rulerRectX[0]*Math.cos(toRadians(rulerAngToHorizontal));
+	// var tempY1 = rulerRectY[0] + rulerRectY[0]*Math.sin(toRadians(rulerAngToHorizontal));
+	// drawLine(context, 'red', rulerRectX[0], rulerRectY[0], tempX1, tempY1);
+	// drawLine(context, 'red', rulerRectX[0], rulerRectY[0] + rulerLength,
+							 // tempX1, tempY1 + rulerLengthY);
+
 
 	putRulerData(context);
 }
@@ -173,11 +214,11 @@ function drawRuler(context) {
 function drawSetup(context) {
 	if (withinBoundariesOfPanel((xPoint - radiusPoint/2), (yPoint - radiusPoint/2), 5) &&
 		withinBoundariesOfPanel((xPoint + radiusPoint/2), (yPoint + radiusPoint/2), 5)) {
-			drawPoint(context, 'black', xPoint, yPoint, radiusPoint);
+			drawCharge(context, 'black', xPoint, yPoint, radiusPoint);
 	}
 
-	drawPoint(context, 'red', xBottomCharge, yBottomCharge, radiusCharge);
-	drawPoint(context, 'red', xTopCharge, yTopCharge, radiusCharge);
+	drawCharge(context, 'red', xBottomCharge, yBottomCharge, radiusCharge);
+	drawCharge(context, 'red', xTopCharge, yTopCharge, radiusCharge);
 }
 
 /*** Simulation Methods ***/
@@ -205,146 +246,6 @@ function updateTopSphere(context, x, y) {
 	xTopCharge = x;
 	yTopCharge = y;
 	repaint(context);
-}
-
-function drawPointChargeFieldLines(context, line) {
-	while (line.ang < 2*Math.PI) {
-		line.sx = xPoint - 10 * Math.cos(line.ang);
-		line.sy = yPoint - 10 * Math.sin(line.ang);
-
-		dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
-		dist2 = Math.sqrt(Math.pow(line.sx-xBottomCharge, 2) + Math.pow(line.sy-yBottomCharge, 2));
-		dist3 = Math.sqrt(Math.pow(line.sx-xTopCharge, 2) + Math.pow(line.sy-yTopCharge, 2));
-		distm = 9.;
-
-		while (istop < nstop && dist1 > distm && dist2 > distm && dist3 > distm && line.sx < width && line.sy < height ) {
-			dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
-			dist2 = Math.sqrt(Math.pow(line.sx-xBottomCharge, 2) + Math.pow(line.sy-yBottomCharge, 2));
-			dist3 = Math.sqrt(Math.pow(line.sx-xTopCharge, 2) + Math.pow(line.sy-yTopCharge, 2));
-
-			compx = -(chargeOfBottom*(line.sx - xBottomCharge) / Math.pow(dist2,3) + chargeOfPoint *(line.sx - xPoint) / Math.pow(dist1,3) + chargeOfTop* (line.sx - xTopCharge) / Math.pow(dist3,3));
-			compy = -(chargeOfBottom*(line.sy - yBottomCharge) / Math.pow(dist2,3) + chargeOfPoint *(line.sy - yPoint) / Math.pow(dist1,3) + chargeOfTop*(line.sy-yTopCharge)/Math.pow(dist3,3));
-
-			comp = Math.sqrt(Math.pow(compx,2) + Math.pow (compy,2));
-
-			if (comp < emagmin)
-				line.ex = line.sx + dx;
-			else
-				line.ex = line.sx + (compx/comp) * dx;
-			if (comp < emagmin)
-				line.ey = line.sy + dx;
-			else
-				line.ey = line.sy + (compy/comp) * dx;
-
-			if (withinBoundariesOfPanel(line.sx, line.sy, 5) &&
-				withinBoundariesOfPanel(line.ex, line.ey, 5)) {
-				drawLine(context, '#00BE00', line.sx, line.sy, line.ex, line.ey);
-			}
-
-			line.sx = line.ex;
-			line.sy = line.ey;
-			istop += 1;
-			distm = distmin;
-		}
-
-		line.ang += Math.PI/4.;
-		comp = 1.;
-		istop = 0;
-	}
-}
-
-function drawChargeOfBottomFieldLines(context, line) {
-	while (line.ang < 2*Math.PI) {
-		//line.ang *= (Math.PI/180.);
-		line.sx = xBottomCharge + 10 * Math.cos(line.ang);
-		line.sy = yBottomCharge - 10 * Math.sin(line.ang);
-
-		dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
-		dist2 = Math.sqrt(Math.pow(line.sx-xBottomCharge, 2) + Math.pow(line.sy-yBottomCharge, 2));
-		dist3 = Math.sqrt(Math.pow(line.sx-xTopCharge, 2) + Math.pow(line.sy-yTopCharge, 2));
-		distm = 9.;
-
-		while(istop < nstop && dist1 > distm && dist2 > distm && dist3 > distm && line.sx < width && line.sy < height ) {
-			dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
-			dist2 = Math.sqrt(Math.pow(line.sx-xBottomCharge, 2) + Math.pow(line.sy-yBottomCharge, 2));
-			dist3 = Math.sqrt(Math.pow(line.sx-xTopCharge, 2) + Math.pow(line.sy-yTopCharge, 2));
-
-			compx = chargeOfBottom*(line.sx - xBottomCharge) / Math.pow(dist2, 3) + chargeOfPoint * (line.sx - xPoint) / Math.pow(dist1, 3) + chargeOfTop * (line.sx - xTopCharge) / Math.pow(dist3, 3);
-			compy = chargeOfBottom*(line.sy - yBottomCharge) / Math.pow(dist2, 3) + chargeOfPoint * (line.sy - yPoint) / Math.pow(dist1, 3) + chargeOfTop * (line.sy - yTopCharge) / Math.pow(dist3, 3);
-
-			comp = Math.sqrt(Math.pow(compx,2) + Math.pow (compy,2));
-
-			if (comp < emagmin)
-				line.ex = line.sx - dx;
-			else
-				line.ex = line.sx + (compx/comp) * dx;
-			if (comp < emagmin)
-				line.ey = line.sy - dx;
-			else
-				line.ey = line.sy + (compy/comp) * dx;
-
-			//Don't draw out of boundary (5 = margin)
-			if (withinBoundariesOfPanel(line.sx, line.sy, 5) &&
-				withinBoundariesOfPanel(line.ex, line.ey, 5)) {
-				drawLine(context, '#00BE00', line.sx, line.sy, line.ex, line.ey);
-			}
-
-			line.sx = line.ex;
-			line.sy = line.ey;
-			distm = distmin;
-			istop += 1;
-		}
-		//	line.ang += 2*Math.PI/(chargeOfBottom*numline);
-		line.ang += Math.PI/4.;
-		comp = 1.;
-		istop = 0;
-	}
-}
-
-function drawChargeOfTopFieldLines(context, line) {
-	while(line.ang < 2*Math.PI) {
-		line.sx = xTopCharge + 10 * Math.cos(line.ang);
-		line.sy = yTopCharge + 10 * Math.sin(line.ang);
-
-		dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
-		dist2 = Math.sqrt(Math.pow(line.sx-xBottomCharge, 2) + Math.pow(line.sy-yBottomCharge, 2));
-		dist3 = Math.sqrt(Math.pow(line.sx-xTopCharge, 2) + Math.pow(line.sy-yTopCharge, 2));
-		distm = 9.;
-
-		while(istop < nstop && dist1 > distm && dist2 > distm && dist3 > distm && line.sx < width && line.sy < height ) {
-			dist1 = Math.sqrt(Math.pow(line.sx-xPoint, 2) + Math.pow(line.sy-yPoint, 2));
-			dist2 = Math.sqrt(Math.pow(line.sx-xBottomCharge, 2) + Math.pow(line.sy-yBottomCharge, 2));
-			dist3 = Math.sqrt(Math.pow(line.sx-xTopCharge, 2) + Math.pow(line.sy-yTopCharge, 2));
-
-			compx = chargeOfBottom*(line.sx - xBottomCharge) / Math.pow(dist2,3) + chargeOfPoint * (line.sx - xPoint) / Math.pow(dist1, 3) + chargeOfTop* (line.sx - xTopCharge) / Math.pow(dist3,3);
-			compy = chargeOfBottom*(line.sy - yBottomCharge) / Math.pow(dist2,3) + chargeOfPoint * (line.sy - yPoint) / Math.pow(dist1, 3) + chargeOfTop*(line.sy-yTopCharge)/Math.pow(dist3,3);
-
-			comp = Math.sqrt(Math.pow(compx,2) + Math.pow (compy,2));
-
-			if (comp < emagmin)
-				line.ex = line.sx + dx;
-			else
-				line.ex = line.sx + (compx/comp) * dx;
-			if (comp < emagmin)
-				line.ey = line.sy + dx;
-			else
-				line.ey = line.sy + (compy/comp) * dx;
-
-			//Don't draw out of boundary (5 = margin)
-			if (withinBoundariesOfPanel(line.sx, line.sy, 5) &&
-				withinBoundariesOfPanel(line.ex, line.ey, 5)) {
-				drawLine(context, '#00BE00', line.sx, line.sy, line.ex, line.ey);
-			}
-
-			line.sx = line.ex;
-			line.sy = line.ey;
-			distm = distmin;
-			istop+=1;
-		}
-		line.ang += Math.PI/4.;
-		istop = 0;
-		distm = distmin;
-	}
 }
 
 function drawFieldLines(context, type, line) {
@@ -420,10 +321,14 @@ function drawFieldLines(context, type, line) {
 		istop = 0;
 		distm = distmin;
 	}
-
 }
 
-function drawIteration(context, x, xold, nint, line) {
+var xminVal;
+var xmaxVal;
+var yminVal;
+var ymaxVal;
+
+function drawIteration(context, x, xold, mvar, line) {
 	// clear page to create animation
 	reset(context);
 	comp = 1;
@@ -433,42 +338,32 @@ function drawIteration(context, x, xold, nint, line) {
 	xPoint = xold[0];
 	yPoint = xold[1];
 
+	xmaxVal = Math.max(xPoint, xmaxVal);
+	xminVal = Math.min(xPoint, xminVal);
+	ymaxVal = Math.max(yPoint, ymaxVal);
+	yminVal = Math.min(yPoint, yminVal);
+
 	drawSetup(context);
 
-	// draw field lines for pointCharge
-	// line.ang = Math.PI/8.;
-	// comp = 1;
-	// istop = 0;
-	// drawPointChargeFieldLines(context, line);
 	drawFieldLines(context, 'point', line);
-
-	// draw field lines for chargeOfBottom
-	// line.ang = Math.PI/8.;
-	// comp = 1;
-	// istop = 0;
-	// drawChargeOfBottomFieldLines(context, line);
 	drawFieldLines(context, 'bottom', line);
-
-	// draw field lines for chargeOfTop
-	// line.ang = Math.PI/8.;
-	// comp = 1;
-	// istop = 0;
-	// drawChargeOfTopFieldLines(context, line);
 	drawFieldLines(context, 'top', line);
+
+	putSimData(context);
 
 	bconecx = pointCircleObject.cx;
 	bconecy = pointCircleObject.cy;
 
-	// nint.log();
-	nint.iterate();
-	xold[0] = nint.x[0];
-	xold[1] = nint.x[1];
-	xold[2] = nint.x[2];
-	xold[3] = nint.x[3];
+	// mvar.log();
+	mvar.iterate();
+	xold[0] = mvar.x[0];
+	xold[1] = mvar.x[1];
+	xold[2] = mvar.x[2];
+	xold[3] = mvar.x[3];
 
 	timeValue += dTime;
 
-	if (showRuler)
+	if (!dragRuler && showRuler)
 		drawRuler(context);
 }
 
@@ -478,7 +373,7 @@ var isInit = false;
 var initAction = false;
 var x;
 var xold;
-var nint;
+var mvar;
 var line;
 
 function init(context) {
@@ -498,8 +393,8 @@ function init(context) {
 	bottomChargeCircleObject = new Circle(0, radiusCharge,xBottomCharge,yBottomCharge);
 	topChargeCircleObject = new Circle(0, radiusCharge,xTopCharge,yTopCharge);
 
-	nint = new RKDemo(timeValue, x, .01);
-	nint.setPotentialValues(chargeOfPoint, chargeOfBottom, chargeOfTop, xBottomCharge, yBottomCharge, xTopCharge, yTopCharge);
+	mvar = new MotionVariable(timeValue, x, .01);
+	mvar.setPotentialValues(chargeOfPoint, chargeOfBottom, chargeOfTop, xBottomCharge, yBottomCharge, xTopCharge, yTopCharge);
 	line = new Line(0.0,0.0,0.0,0.0);
 
 	isInit = true;
@@ -509,7 +404,7 @@ function init(context) {
 function iterateSimulation(canvas, context) {
 	if (!isInit) {
 		isInit = true;
-		init();
+		init(context);
 	}
 	if (inAction) {
 		if (!initAction) {
@@ -521,21 +416,21 @@ function iterateSimulation(canvas, context) {
 			xold[1] = x[1];
 			xold[2] = x[2];
 			xold[3] = x[3];
-			nint = new RKDemo(timeValue, x, 0.01);
-			nint.setPotentialValues(chargeOfPoint, chargeOfBottom, chargeOfTop, xBottomCharge, yBottomCharge, xTopCharge, yTopCharge);
+			mvar = new MotionVariable(timeValue, x, 0.01);
+			mvar.setPotentialValues(chargeOfPoint, chargeOfBottom, chargeOfTop, xBottomCharge, yBottomCharge, xTopCharge, yTopCharge);
 			initAction = true;
 		}
 		if (timeValue < timeMax && withinBoundariesOfPanel((xPoint - radiusPoint/2), (yPoint - radiusPoint/2), 5) &&
 								   withinBoundariesOfPanel((xPoint + radiusPoint/2), (yPoint + radiusPoint/2), 5)) {
 			xPoint = xold[0];
 			yPoint = xold[1];
-			drawIteration(context, x, xold, nint, line);
+			drawIteration(context, x, xold, mvar, line);
 		} else {
 			inAction = false;
 			initAction = false;
 			reset(context);
 			drawSetup(context);
-			if (showRuler)
+			if (!dragRuler && showRuler)
 				drawRuler(context);
 			clearInterval(simTimer);
 		}
