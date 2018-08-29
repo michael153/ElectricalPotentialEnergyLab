@@ -1,5 +1,5 @@
 # Rewrite Electrical Potential Energy Lab
-[Original Website (run on Internet Explorer)](web.mit.edu/jbelcher/www/java/attLec/attPot.html)
+[Link](http://michaelwan2000.com/electrical_potential_energy.html)
 
 ## Run Code
 ```
